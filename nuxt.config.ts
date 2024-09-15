@@ -12,6 +12,11 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       bucketUrl: process.env.BUCKET_URL
+    },
+    openai: {
+      apiKey: process.env.NUXT_ENV_OPENAI_API_KEY,  // API key from env
+      organizationId: process.env.NUXT_ENV_OPENAI_ORG_ID,  // Org ID from env
+      projectId: process.env.NUXT_ENV_OPENAI_PROJECT_ID,  // Project ID from env
     }
   }
 })
