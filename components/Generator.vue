@@ -4,9 +4,6 @@
       <USelectMenu v-model="selectedTopic" :options="topic" />
     </div>
     <div v-if="selectedTopic === 'Personal'" class="flex w-25">
-      <UInput type="text" v-model="keyWords.personOne" placeholder="Person One" />
-      <UInput type="text" v-model="keyWords.personTwo" placeholder="Person Two" />
-      <UInput type="text" v-model="keyWords.location" placeholder="Location" />
       <command-palette :items="keywords" @add-new-keyword="addNewKeyword" />
     </div>
     <UTabs :items="tabItems" @change="onChange" />
@@ -49,6 +46,7 @@
           {{ post }}
         </div>
       </div>
+      {{ selected }}
     </div>
   </div>
 </template>
@@ -62,16 +60,26 @@ const userStore = useUserStore()
 import CommandPalette from "../components/CommandPalette.vue" // Import the child component
 
 const keywords = ref([
-  { id: 1, label: 'Friends' },
-  { id: 2, label: 'Arlene Mccoy' },
-  { id: 3, label: 'Devon Webb' },
-  { id: 4, label: 'Tom Cook' },
-  { id: 5, label: 'Tanya Fox' },
-  { id: 6, label: 'Hellen Schmidt' },
-  { id: 7, label: 'Caroline Schultz' },
-  { id: 8, label: 'Mason Heaney' },
-  { id: 9, label: 'Claudie Smitham' },
-  { id: 10, label: 'Emil Schaefer' }
+  { id: 1, label: 'family' },
+  { id: 2, label: 'friends' },
+  { id: 3, label: 'mum & dad' },
+  { id: 4, label: 'brother' },
+  { id: 5, label: 'sister' },
+  { id: 6, label: 'Keir Starmer' },
+  { id: 7, label: 'Liam Gallagher' },
+  { id: 8, label: 'Jarvis Cocker' },
+  { id: 9, label: 'King Charles' },
+  { id: 10, label: 'Fleetwood Mac' },
+  { id: 11, label: 'sexy' },
+  { id: 12, label: 'rockin' },
+  { id: 13, label: 'addiction' },
+  { id: 14, label: 'respect' },
+  { id: 15, label: 'money' },
+  { id: 16, label: 'success' },
+  { id: 17, label: 'love' },
+  { id: 18, label: 'emptiness' },
+  { id: 19, label: 'ambition' },
+  { id: 20, label: 'London' },
 ]);
 
 // Keywords and commandItems setup
@@ -117,14 +125,6 @@ const selectedIcon = ref(tabItems[0].icon);
 const help = ref("What can you help me with?");
 const helpRes = ref("");
 const rapRes = ref("");
-const keyWords = reactive({
-  personOne: "",
-  personTwo: "",
-  location: "",
-
-})
-const personOne = ref("");
-const personTwo = ref("");
 const isLoading = ref(false);
 let posts = ref([]);
 let isPosts = ref(false);
