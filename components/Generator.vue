@@ -1,18 +1,20 @@
 <template>
   <div>
-    <div class="h-auto w-[200px] my-6">
+    <div class="h-auto w-[300px] my-6 mx-auto">
       <USelectMenu v-model="selectedTopic" :options="topic" />
+      <div v-if="selectedTopic === 'Personal'" class="flex w-25">
+        <CommandPalette :items="keywords" @updateSelected="handleSelectedUpdate" @add-new-keyword="addNewKeyword" />
+      </div>
     </div>
 
-    <div v-if="selectedTopic === 'Personal'" class="flex w-25">
-      <CommandPalette :items="keywords" @updateSelected="handleSelectedUpdate" @add-new-keyword="addNewKeyword" />
-    </div>
+    
     <UTabs :items="tabItems" @change="onChange" />
     
     <div class="mx-auto max-w-[1200px] overflow-hidden">
-      <UInput type="text" v-model="help" />
-      <UButton @click="sendHelp" label="Ask" />
-      
+      <div class="flex flex-row">
+        <UInput type="text" v-model="help" />
+        <UButton @click="sendHelp" label="Ask" />
+      </div>
       {{ helpRes.content }}
       
       <hr class="my-8">
@@ -37,7 +39,7 @@
             :loading="isLoading" 
             icon="i-heroicons-sparkles-20-solid" 
             @click="sendMessage" 
-            color="white" 
+            color="yellow" 
             label="Generate" 
             size="xl"
           />

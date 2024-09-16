@@ -28,9 +28,9 @@
           class="mt-2"
         />
       </div>
-      <div>
+      <!-- <div>
         Selected Keywords: {{ selected }}
-      </div>
+      </div> -->
     </UModal>
   </div>
 </template>

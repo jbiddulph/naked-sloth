@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-gray-700 fixed w-[calc(100%+1px)] h-full">
+  <div class="bg-gray-900 overflow-y h-auto w-[calc(100%+1px)]">
     <NuxtPage />
   </div>
 </template>
