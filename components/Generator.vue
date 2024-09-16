@@ -3,8 +3,9 @@
     <div class="h-auto w-[200px] my-6">
       <USelectMenu v-model="selectedTopic" :options="topic" />
     </div>
+
     <div v-if="selectedTopic === 'Personal'" class="flex w-25">
-      <command-palette :items="keywords" @add-new-keyword="addNewKeyword" />
+      <CommandPalette :items="keywords" @updateSelected="handleSelectedUpdate" @add-new-keyword="addNewKeyword" />
     </div>
     <UTabs :items="tabItems" @change="onChange" />
     
@@ -26,21 +27,22 @@
           class="custom-placeholder"
         />  
       </div>
-      <div class="m-auto w-auto text-white py-6 text-center">
-        <div v-html="rapRes.content"></div>
+      <div class="flex h-auto flex-col">
+        <div class="m-auto w-auto text-white py-6 text-center h-auto overflow-scroll">
+          <div v-html="rapRes.content"></div>
+        </div>
+        <div class="w-full text-center">
+          <UButton
+            class="text-center"
+            :loading="isLoading" 
+            icon="i-heroicons-sparkles-20-solid" 
+            @click="sendMessage" 
+            color="white" 
+            label="Generate" 
+            size="xl"
+          />
+        </div>
       </div>
-      <div class="w-full text-center">
-        <UButton
-          class="text-center"
-          :loading="isLoading" 
-          icon="i-heroicons-sparkles-20-solid" 
-          @click="sendMessage" 
-          color="white" 
-          label="Generate" 
-          size="xl"
-        />
-      </div>
-      
       <div id="posts" class="px-4 max-w-[1200px] mx-auto">
         <div v-if="isPosts" v-for="post in posts" :key="post">
           {{ post }}
@@ -82,19 +84,8 @@ const keywords = ref([
   { id: 20, label: 'London' },
 ]);
 
-// Keywords and commandItems setup
-// const keywords = ref(['Nuxt', 'Vue', 'JavaScript', 'Tailwind']);
-// const commandItems = computed(() => {
-//   const items = keywords.value.map((keyword) => ({
-//     label: keyword.label.toLowerCase(),
-//     value: keyword.label.toLowerCase(),
-//   }));
-//   console.log('Command Items in Parent Component:', items);
-//   return items;
-// });
-
 // Handle new keyword addition
-const addNewKeyword = (newKeyword) => {
+const addNewKeyword = (newKeyword: string) => {
   const trimmedKeyword = newKeyword.trim().toLowerCase(); // Ensure no leading/trailing spaces and convert to lowercase
 
   // Check if the keyword already exists in the list
@@ -135,8 +126,18 @@ onBeforeMount(() => {
   ];
 });
 
+// State in Generator for the selected keywords
+const selectedKeywords = ref([]);
+const handleSelectedUpdate = (newSelected: any) => {
+  selectedKeywords.value = newSelected;
+};
 // Computed property that updates the message based on selected topic and type
-const message = computed(() => `Create a ${selectedTopic.value} ${selectedType.value}`);
+// const message = computed(() => `Create a ${selectedTopic.value} ${selectedType.value}`);
+const message = computed(() => {
+  const keywordLabels = selectedKeywords.value.map(item => item.label).join(", ");
+
+  return `Create ${selectedTopic.value} ${selectedType.value}${keywordLabels ? ` containing the keywords ${keywordLabels}` : ''}`;
+});
 
 function onChange(index: any) {
   const item = tabItems[index];
@@ -154,6 +155,7 @@ const sendHelp = async () => {
 
 const sendMessage = async () => {
   isLoading.value = true;
+  // console.log("Message: ", message.value);
   rapRes.value = await $fetch('/api/ai', {
     method: 'POST',
     body: { message: message.value }  // Use computed message here

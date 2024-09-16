@@ -29,7 +29,7 @@
         />
       </div>
       <div>
-        Selected Keywords:{{ selected }}
+        Selected Keywords: {{ selected }}
       </div>
     </UModal>
   </div>
@@ -42,16 +42,18 @@ const props = defineProps({
     required: true,
   },
 });
+
 const ui = {
   group: {
     container: 'text-md text-gray-700 dark:text-gray-200 max-h-[200px] overflow-scroll-y',
   },
-}
-const isOpen = ref(false)
-const selected = ref([])
-// Log to check if items are being passed correctly
-console.log('Command Items in Child Component:', props.items);
-const emit = defineEmits(['add-new-keyword']);
+};
+
+const isOpen = ref(false);
+const selected = ref([]);
+
+// Emit events to the parent component
+const emit = defineEmits(['add-new-keyword', 'updateSelected']);
 const newKeyword = ref('');
 
 // Function to add a new keyword
@@ -59,15 +61,19 @@ const addKeyword = () => {
   const trimmedKeyword = newKeyword.value.trim().toLowerCase();
 
   // Emit the new keyword to the parent component if it's valid
-  if (trimmedKeyword && !props.items.includes(trimmedKeyword)) {
+  if (trimmedKeyword && !props.items.some(item => item.label.toLowerCase() === trimmedKeyword)) {
     emit('add-new-keyword', trimmedKeyword); // Emit the event to the parent
     newKeyword.value = ''; // Reset the input field
   } else {
     alert('Keyword is either empty or already exists.');
   }
 };
-</script>
 
+// Watch for changes in selected and emit updated selection to the parent
+watch(selected, (newSelected) => {
+  emit('updateSelected', newSelected);
+});
+</script>
 
 <style scoped>
 .UCommandPalette {
