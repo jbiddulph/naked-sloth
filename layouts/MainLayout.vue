@@ -1,5 +1,10 @@
 <template>
   <div id="mainLayout" class="h-screen">
+    <div class="dark:text-green-500 text-green-900">
+      <button @click="toggleTheme">
+        Toggle Theme
+      </button>
+    </div>
     <div class="w-full mx-auto max-w-[1200px]">
       <div id="topMenu" class="w-full flex items-center justify-center px-2 h-10 my-2">
         <img src="/threads-logo.png" class="w-[35px]" alt="">
@@ -38,4 +43,28 @@
 <script setup lang="ts">
 import { useUserStore } from '~/stores/user';
 const userStore = useUserStore()
+
+const isDarkMode = ref(false);
+
+const toggleTheme = () => {
+  isDarkMode.value = !isDarkMode.value;
+  if (isDarkMode.value) {
+    document.documentElement.classList.add('dark');
+  } else {
+    document.documentElement.classList.remove('dark');
+  }
+};
 </script>
+
+<style scoped>
+body {
+  background-color: white;
+  color: black;
+}
+
+/* Dark mode styles */
+.dark body {
+  background-color: black;
+  color: white;
+}
+</style>

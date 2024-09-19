@@ -1,5 +1,7 @@
 import OpenAI from "openai";
+import { PrismaClient } from "@prisma/client";
 
+const prisma = new PrismaClient();
 const config = useRuntimeConfig();
 
 const openaiConfig = new OpenAI({
@@ -9,4 +11,5 @@ const openaiConfig = new OpenAI({
   project: config.openai.projectId,  // Set the project ID here if needed
 });
 
+export const $prisma = prisma;
 export const $openai = openaiConfig;

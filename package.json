@@ -15,12 +15,15 @@
     "@pinia/nuxt": "^0.5.4",
     "@prisma/client": "^5.19.1",
     "@vite-pwa/nuxt": "^0.10.5",
+    "fabric": "^6.4.2",
     "nuxt": "^3.13.0",
     "openai": "^4.61.0",
     "pinia": "^2.2.2",
-    "prisma": "^5.19.1",
     "uuid": "^10.0.0",
     "vue": "latest",
     "vue-router": "latest"
+  },
+  "devDependencies": {
+    "prisma": "^5.19.1"
   }
 }

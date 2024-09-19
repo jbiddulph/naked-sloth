@@ -5,7 +5,7 @@ export default defineNuxtConfig({
   pages: true,
   modules: [
     '@nuxt/ui',
-    // '@nuxtjs/supabase',
+    '@nuxtjs/supabase',
     '@pinia/nuxt',
     '@vite-pwa/nuxt',
   ],
@@ -17,6 +17,18 @@ export default defineNuxtConfig({
       apiKey: process.env.NUXT_ENV_OPENAI_API_KEY,  // API key from env
       organizationId: process.env.NUXT_ENV_OPENAI_ORG_ID,  // Org ID from env
       projectId: process.env.NUXT_ENV_OPENAI_PROJECT_ID,  // Project ID from env
+    }
+  },
+  supabase: {
+    redirect: false,
+  },
+  imports: {
+    dirs: ['stores']
+  },
+  app: {
+    head: {
+      charset: 'utf-8',
+      viewport: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no',
     }
   }
 })
