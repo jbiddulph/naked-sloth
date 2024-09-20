@@ -2,31 +2,34 @@
   <div class="flex flex-row">
     <!-- Canvas Element -->
     <canvas ref="canvasEl" width="600" height="600" style="border: 1px solid #999999; border-radius: 50px;"></canvas>
-
+    <!-- List of objects with drag-and-drop -->
+    <div class="object-list">
+      <draggable v-model="objectList" @end="onDrop">
+        <template #item="{ element }">
+          <div class="object-item">
+            {{ element.name }}
+          </div>
+        </template>
+      </draggable>
+    </div>
     <!-- Controls for shapes and text -->
     <div class="controls">
       <button @click="addSquare"><Icon name="tdesign:add-rectangle" title="Add Square" color="black" size="30" /></button>
       <button @click="addCircle"><Icon name="tdesign:add-circle" title="Add Circle" color="black" size="30" /></button>
       <button @click="removeSelected"><Icon name="tdesign:delete" title="Remove Selected" color="black" size="30" /></button>
-      <input type="color" v-model="selectedColor" @change="changeColor" />
-      <!-- Layer reordering buttons -->
-      <div class="layer-controls">
-        <button @click="bringToFront"><Icon name="tdesign:flip-to-front" title="Bring to Front" color="black" size="30" /></button>
-        <button @click="sendToBack"><Icon name="tdesign:flip-to-back" title="Send to Back" color="black" size="30" /></button>
-        <button @click="bringForward"><Icon name="tdesign:jump" title="Bring Forward" color="black" size="30" /></button>
-        <button @click="sendBackward"><Icon name="tdesign:jump-off" title="Push Back" color="black" size="30" /></button>
-      </div>
+      <input type="color" v-model="canvasStore.selectedColor" @change="changeColor" />
+      
       <!-- Controls for text customization -->
       <div>
-        <textarea v-model="textContent" class="w-[400px] border" placeholder="Enter multi-line text" @input="updateTextContent" rows="5" cols="15" /><br />
-        <select v-model="selectedFont" @change="updateFont">
+        <textarea v-model="canvasStore.textContent" class="w-[400px] border" placeholder="Enter multi-line text" @input="updateTextContent" rows="5" cols="15" /><br />
+        <select v-model="canvasStore.selectedFont" @change="updateFont">
           <option value="Arial">Arial</option>
           <option value="Helvetica">Helvetica</option>
           <option value="Times New Roman">Times New Roman</option>
           <option value="Courier">Courier</option>
         </select>
-        <input type="number" v-model="fontSize" @input="updateFontSize" placeholder="Font Size" />
-        <input type="color" v-model="textColor" @change="updateTextColor" />
+        <input type="number" v-model="canvasStore.fontSize" @input="updateFontSize" placeholder="Font Size" />
+        <input type="color" v-model="canvasStore.textColor" @change="updateTextColor" />
 
         <!-- Text alignment options -->
         <select v-model="textAlignment" @change="updateTextAlign">
@@ -42,47 +45,31 @@
 
 <script setup lang="ts">
 import { useRapStore } from "~/stores/rap";
-import { ref, onMounted, onBeforeUnmount } from 'vue';
+import { useCanvasStore } from "~/stores/canvas";
+import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import * as fabric from 'fabric'; // v6
+import draggable from 'vuedraggable';  // Import vuedraggable
 
 const rapStore = useRapStore()
+const canvasStore = useCanvasStore()
 
 const canvasEl = ref<HTMLCanvasElement | null>(null);
 let canvas: fabric.Canvas | null = null;
 
-// Store selected color for shapes
-const selectedColor = ref('#ff0000');
-
-// Store properties for text
-const textContent = ref(rapStore.rapText);
-const fontSize = ref(20);
-const selectedFont = ref('Arial');
-const textColor = ref('#000000'); // Default text color
-const textAlignment = ref('left'); // Default text alignment
+const objectList = ref([]);  // List of objects on the canvas
 let defaultText = null;
 
 onMounted(() => {
-  const options = {
-    backgroundColor: '#ffffff',
-    selectionBorderColor: '#666666'
-  };
-
   // Initialize Fabric.js canvas
-  canvas = new fabric.Canvas(canvasEl.value, options);
+  canvas = new fabric.Canvas(canvasEl.value, canvasStore.options);
 
   // Add default multi-line text field to the canvas
-  defaultText = new fabric.Textbox(textContent.value, {
-    left: 200,
-    top: 200,
-    width: 200,  // Set the width for the textbox
-    fontSize: fontSize.value,
-    fill: textColor.value, // Set default text color
-    fontFamily: selectedFont.value,
-    textAlign: textAlignment.value, // Set default alignment
-    splitByGrapheme: true,  // Ensure proper text wrapping
-  });
+  defaultText = new fabric.Textbox(canvasStore.textContent, canvasStore.textboxDefaults);
   canvas.add(defaultText);
-
+  objectList.value.push({ name: 'Text', object: defaultText });
+  console.log("Canvas:", canvas);
+  console.log("Canvas has sendBackwards:", typeof canvas.sendBackwards === "function");
+  console.log("Canvas has bringForward:", typeof canvas.bringForward === "function");
   // Optional: Set default selection style for active objects
   canvas.selection = true;
 
@@ -90,6 +77,13 @@ onMounted(() => {
   canvas.on('selection:updated', () => {
     console.log("Object selected: ", canvas?.getActiveObject());
   });
+  canvas.renderAll();
+  if (canvas) {
+    console.log('Canvas initialized:', canvas);
+    // Add objects and other functionality
+  }
+  console.log("canvas.moveTo exists:", typeof canvas.moveTo === 'function');
+
 });
 
 onBeforeUnmount(() => {
@@ -100,25 +94,16 @@ onBeforeUnmount(() => {
 
 // Function to add a new square
 const addSquare = () => {
-  const square = new fabric.Rect({
-    left: 100,
-    top: 100,
-    fill: selectedColor.value,
-    width: 50,
-    height: 50,
-  });
+  const square = new fabric.Rect(canvasStore.squareDefaults);
   canvas?.add(square);
+  objectList.value.push({ name: 'Rectangle', object: square });
 };
 
 // Function to add a new circle
 const addCircle = () => {
-  const circle = new fabric.Circle({
-    left: 150,
-    top: 150,
-    radius: 30,
-    fill: selectedColor.value,
-  });
+  const circle = new fabric.Circle(canvasStore.circleDefaults);
   canvas?.add(circle);
+  objectList.value.push({ name: 'Circle', object: circle });
 };
 
 // Function to remove the selected object from the canvas
@@ -133,7 +118,7 @@ const removeSelected = () => {
 const changeColor = () => {
   const activeObject = canvas?.getActiveObject();
   if (activeObject) {
-    activeObject.set('fill', selectedColor.value);
+    activeObject.set('fill', canvasStore.selectedColor);
     canvas?.renderAll(); // Re-render the canvas to apply changes
   }
 };
@@ -141,7 +126,7 @@ const changeColor = () => {
 // Function to update the text content on the canvas
 const updateTextContent = () => {
   if (defaultText) {
-    defaultText.set('text', textContent.value);
+    defaultText.set('text', canvasStore.textContent);
     canvas?.renderAll();
   }
 };
@@ -149,7 +134,7 @@ const updateTextContent = () => {
 // Function to update the font family of the text
 const updateFont = () => {
   if (defaultText) {
-    defaultText.set('fontFamily', selectedFont.value);
+    defaultText.set('fontFamily', canvasStore.selectedFont);
     canvas?.renderAll();
   }
 };
@@ -157,7 +142,7 @@ const updateFont = () => {
 // Function to update the font size of the text
 const updateFontSize = () => {
   if (defaultText) {
-    defaultText.set('fontSize', parseInt(fontSize.value));
+    defaultText.set('fontSize', parseInt(canvasStore.fontSize));
     canvas?.renderAll();
   }
 };
@@ -165,7 +150,7 @@ const updateFontSize = () => {
 // Function to update the text color
 const updateTextColor = () => {
   if (defaultText) {
-    defaultText.set('fill', textColor.value);
+    defaultText.set('fill', canvasStore.textColor);
     canvas?.renderAll();
   }
 };
@@ -173,42 +158,23 @@ const updateTextColor = () => {
 // Function to update the text alignment
 const updateTextAlign = () => {
   if (defaultText) {
-    defaultText.set('textAlign', textAlignment.value);
+    defaultText.set('textAlign', canvasStore.textAlignment);
     canvas?.renderAll();
   }
 };
 
-// Layer reordering functions
-const bringToFront = () => {
-  const activeObject = canvas?.getActiveObject();
-  if (activeObject) {
-    canvas?.bringToFront(activeObject);  // Brings the active object to the top of the stack
-    canvas?.renderAll();  // Re-render the canvas to apply changes
-  }
-};
+// Function to handle drop event
+const onDrop = () => {
+if (canvas) {
+  // Update z-index order on canvas based on objectList order
+  objectList.value.forEach((item, index) => {
+    canvas.moveTo(item.object, index);
+  });
 
-const sendToBack = () => {
-  const activeObject = canvas?.getActiveObject();
-  if (activeObject) {
-    canvas?.sendToBack(activeObject);  // Sends the active object to the bottom of the stack
-    canvas?.renderAll();  // Re-render the canvas to apply changes
-  }
-};
-
-const bringForward = () => {
-  const activeObject = canvas?.getActiveObject();
-  if (activeObject) {
-    canvas?.bringForward(activeObject);  // Moves the active object one step forward
-    canvas?.renderAll();  // Re-render the canvas to apply changes
-  }
-};
-
-const sendBackward = () => {
-  const activeObject = canvas?.getActiveObject();
-  if (activeObject) {
-    canvas?.sendBackwards(activeObject);  // Moves the active object one step backward
-    canvas?.renderAll();  // Re-render the canvas to apply changes
-  }
+  console.log("Helloooo");  // This will log after nextTick resolves
+}
+  // Render canvas after reordering
+  canvas.renderAll();
 };
 </script>
 
@@ -232,5 +198,22 @@ input, select, textarea {
 
 .layer-controls {
   margin-top: 10px;
+}
+
+.object-list {
+  margin-left: 20px;
+  width: 200px;
+}
+
+.object-item {
+  padding: 10px;
+  border: 1px solid #ccc;
+  margin-bottom: 5px;
+  background-color: #f9f9f9;
+  cursor: grab;
+}
+
+.object-item:active {
+  cursor: grabbing;
 }
 </style>
