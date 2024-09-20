@@ -8,10 +8,20 @@ export const useCanvasStore = defineStore({
       backgroundColor: '#ffffff',
       selectionBorderColor: '#666666'
     },
-    fontSize: "20",
+    fontSize: "50",
     textColor: "#000000",
     selectedFont: "Arial",
     textAlignment: "left",
+    fonts: [
+      "Arial", 
+      "Helvetica", 
+      "Times New Roman", 
+      "Courier", 
+      "Verdana", 
+      "Georgia", 
+      "Comic Sans MS", 
+      "Impact"
+    ],
     selectedColor: "#ff0000"
   }),
   getters: {
@@ -45,5 +55,12 @@ export const useCanvasStore = defineStore({
       }
     }
   },
-  actions: {}
+  actions: {
+    updateSelectedFont(font: string) {
+      this.selectedFont = font;
+    },
+    updateBackgroundColor(color: string) {
+      this.options.backgroundColor = color;
+    },
+  }
 })
