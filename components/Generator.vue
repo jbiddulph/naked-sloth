@@ -97,11 +97,11 @@
 
 <script lang="ts" setup>
 import { useUserStore } from "~/stores/user";
-import { useRapStore } from "~/stores/rap";
+import { useCanvasStore } from "~/stores/canvas";
 import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
-const rapStore = useRapStore()
+const canvasStore = useCanvasStore()
 const user = useSupabaseUser()
 const router = useRouter()
 
@@ -267,7 +267,7 @@ const sendMessage = async () => {
   isLoading.value = false;
   cleanRap.value = removeHtmlTags(rapRes.value.content)
   console.log("Clean Rap: ", cleanRap)
-  rapStore.rapText = cleanRap._value
+  canvasStore.textContent = cleanRap._value
 };
 
 // Watch for changes in selectedTopic and update the placeholder message
