@@ -1,8 +1,18 @@
 <template>
   <div id="mainLayout" class="h-screen">
-    <div class="dark:text-green-500 text-green-900">
+    <div class="dark:text-yellow-500 text-yellow-900 flex w-full justify-between p-2">
       <button @click="toggleTheme">
-        Toggle Theme
+        <template v-if="isDarkMode">
+          <UIcon name="mdi:moon-waning-crescent" color="yellow" />
+        </template>
+        <template v-else>
+          <UIcon name="mdi:white-balance-sunny" color="yellow" />
+        </template>
+      </button>
+      <button  
+        @click="userStore.isLogoutOverlay = true"
+      >
+        <UIcon name="i-heroicons:arrow-right-end-on-rectangle" class="w-6 h-6" />
       </button>
     </div>
     <div class="w-full mx-auto max-w-[1200px]">

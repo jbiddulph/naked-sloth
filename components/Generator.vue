@@ -11,10 +11,10 @@
     <UTabs :items="tabItems" @change="onChange" />
     
     <div class="mx-auto max-w-[1200px] overflow-hidden">
-      <div class="flex flex-row">
+      <!-- <div class="flex flex-row">
         <UInput type="text" v-model="help" />
         <UButton @click="sendHelp" label="Ask" />
-      </div>
+      </div> -->
       {{ helpRes.content }}
       <div >
         <UInput  
@@ -33,7 +33,7 @@
         <div class="m-auto w-auto py-6 text-center h-auto overflow-scroll">
           <div v-html="rapRes.content"></div>
         </div>
-        <div class="w-full text-center">
+        <div class="w-full text-center mb-6">
           <UButton
             class="text-center"
             :loading="isLoading" 
@@ -46,16 +46,12 @@
       </div>
       <!-- Canvas -->
       <!-- <div v-if="rapStore.rapText !== ''"> -->
-      <div>
-        <DesignModal />
+      <div class="w-full text-center">
+        <DesignModal 
+          class="text-center"
+        />
       </div>
       <!-- END Canvas -->
-      <button  
-          @click="userStore.isLogoutOverlay = true"
-          class="w-full h-full"
-        >
-        <UIcon name="i-heroicons:arrow-right-end-on-rectangle" class="w-10 h-10" />
-      </button>
       <div id="posts" class="px-4 max-w-[1200px] mx-auto">
         <div v-if="isPosts" v-for="post in posts" :key="post">
           <Post :post="post" @isDeleted="posts = []" />

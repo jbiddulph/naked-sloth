@@ -1,31 +1,25 @@
 <template>
   <div class="flex flex-row">
     <!-- Canvas Element -->
-    <canvas ref="canvasEl" width="600" height="600" style="border: 1px solid #999999; border-radius: 50px;"></canvas>
-    <!-- List of objects with drag-and-drop -->
-    <div class="object-list">
-      <draggable v-model="objectList" @end="onDrop">
-        <template #item="{ element }">
-          <div class="object-item">
-            {{ element.name }}
-          </div>
-        </template>
-      </draggable>
-    </div>
+    <canvas ref="canvasEl" width="600" height="600" style="border: 1px solid #999999; border-radius: 50px; margin-right: 10px;"></canvas>
     <!-- Controls for shapes and text -->
     <div class="controls">
-      <button @click="downloadCanvasAsImage">Download Canvas as Image</button><br />
+      <UButton @click="downloadCanvasAsImage" variant="solid">Download Canvas as Image</UButton><br />
       BG Color: <input type="color" v-model="canvasStore.options.backgroundColor" @change="updateCanvasBackgroundColor"><br />
        <!-- Background Image Upload -->
       <label for="bgImageUpload">Upload Background Image:</label><br /><br />
-      <button @click="sendBackwards">Send Backward</button>
-<button @click="bringForward">Bring Forward</button><br />
       <input type="file" id="bgImageUpload" @change="uploadBackgroundImage" accept="image/*"><br />
       <button @click="addSquare"><Icon name="tdesign:add-rectangle" title="Add Square" color="black" size="30" /></button>
       <button @click="addCircle"><Icon name="tdesign:add-circle" title="Add Circle" color="black" size="30" /></button>
       <button @click="removeSelected"><Icon name="tdesign:delete" title="Remove Selected" color="black" size="30" /></button>
       <input type="color" v-model="canvasStore.selectedColor" @change="changeColor" />
-      
+      <!-- Layer reordering buttons -->
+      <div class="layer-controls">
+        <button @click="bringToFront"><Icon name="tdesign:flip-to-front" title="Bring to Front" color="black" size="30" /></button>
+        <button @click="sendToBack"><Icon name="tdesign:flip-to-back" title="Send to Back" color="black" size="30" /></button>
+        <button @click="bringForward"><Icon name="tdesign:jump" title="Bring Forward" color="black" size="30" /></button>
+        <button @click="sendBackwards"><Icon name="tdesign:jump-off" title="Push Back" color="black" size="30" /></button>
+      </div>
       <!-- Controls for text customization -->
       <div>
         <textarea v-model="canvasStore.textContent" class="w-[400px] border" placeholder="Enter multi-line text" @input="updateTextContent" rows="5" cols="15" /><br />
@@ -50,17 +44,20 @@
 <script setup lang="ts">
 import { useRapStore } from "~/stores/rap";
 import { useCanvasStore } from "~/stores/canvas";
+import { useDesignStore } from "~/stores/design";
+
 import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import * as fabric from 'fabric'; // v6
-import draggable from 'vuedraggable';  // Import vuedraggable
 
 const rapStore = useRapStore()
 const canvasStore = useCanvasStore()
+const designStore = useDesignStore()
 
 const canvasEl = ref<HTMLCanvasElement | null>(null);
 let canvas: fabric.Canvas | null = null;
 
-const objectList = ref([]);  // List of objects on the canvas
+
+let objectToSendBack = null;
 let defaultText = null;
 
 onMounted(async() => {
@@ -69,26 +66,21 @@ onMounted(async() => {
     // Initialize Fabric.js canvas
     canvas = new fabric.Canvas(canvasEl.value, canvasStore.options);
 
-    console.log("Canvas initialized:", canvas);
+    // Event listener for selection
+    canvas.on('selection:created', (event) => {
+      objectToSendBack = event.target;
+      console.log("Object selected (created):", objectToSendBack);
+    });
 
-
-    const activeObject = canvas?.getActiveObject();
-    if (activeObject && typeof activeObject.sendBackwards === 'function') {
-      activeObject.sendBackwards();
-    } else {
-      console.error("sendBackwards is not a function on the active object");
-    }
-    // Check if functions exist
-    console.log("Canvas has sendBackwards:", typeof canvas.sendBackwards === "function");
-    console.log("Canvas has bringForward:", typeof canvas.bringForward === "function");
-
+    canvas.on('selection:updated', (event) => {
+      objectToSendBack = event.target;
+      console.log("Object selected (updated):", objectToSendBack);
+    });
+    
     // Add default multi-line text field to the canvas
     defaultText = new fabric.Textbox(canvasStore.textContent, canvasStore.textboxDefaults);
     canvas.add(defaultText);
-    objectList.value.push({ name: 'Text', object: defaultText });
-    console.log("Canvas:", canvas);
-    console.log("Canvas has sendBackwards:", typeof canvas.sendBackwards === "function");
-    console.log("Canvas has bringForward:", typeof canvas.bringForward === "function");
+    
     // Optional: Set default selection style for active objects
     canvas.selection = true;
 
@@ -101,101 +93,149 @@ onMounted(async() => {
       console.log('Canvas initialized:', canvas);
       // Add objects and other functionality
     }
-    console.log("canvas.moveTo exists:", typeof canvas.moveTo === 'function');
+    console.log("canvas.moveObjectTo exists:", typeof canvas.moveObjectTo === 'function');
   }
 });
 
 onBeforeUnmount(() => {
   if (canvas) {
+    canvas.off('selection:created');
+    canvas.off('selection:updated');
     canvas.dispose();  // Clean up the canvas when the component is destroyed
   }
 });
 
-const sendBackwards = () => {
-  const activeObject = canvas?.getActiveObject();
-  if (activeObject && typeof activeObject.sendBackwards === "function") {
-    activeObject.sendBackwards();
-    canvas?.renderAll();
+const sendToBack = () => {
+  const activeObject = canvas?.getActiveObject();  // Get the active object
+  if (activeObject) {
+    // Use canvas.sendToBack() to send the object to the back of the stack
+    canvas.sendObjectToBack(activeObject);  
+    canvas.renderAll();  // Re-render the canvas after updating the object position
   } else {
-    console.error("No active object or method sendBackwards is not available");
+    console.error("No object selected");
+  }
+};
+
+const bringToFront = () => {
+  const activeObject = canvas?.getActiveObject();
+  if (activeObject) {
+    canvas.bringObjectToFront(activeObject);
+    canvas.renderAll();
+  } else {
+    console.error("No active object selected");
+  }
+};
+
+const sendBackward = () => {
+  const activeObject = canvas?.getActiveObject();  // Get the active object
+  if (activeObject) {
+    // Use canvas.sendToBack() to send the object to the back of the stack
+    canvas.sendObjectBackwards(activeObject);  
+    canvas.renderAll();  // Re-render the canvas after updating the object position
+  } else {
+    console.error("No object selected");
   }
 };
 
 const bringForward = () => {
   const activeObject = canvas?.getActiveObject();
   if (activeObject) {
-    console.log("Active object:", activeObject); // Log the active object to check
-    if (typeof activeObject.bringForward === "function") {
-      activeObject.bringForward();
-      canvas?.renderAll();
-    } else {
-      console.error("Method bringForward is not available on this object");
-    }
+    canvas.bringObjectForward(activeObject);
+    canvas.renderAll();
   } else {
     console.error("No active object selected");
   }
 };
 
 const downloadCanvasAsImage = () => {
-  // Show confirmation dialog
-  const confirmDownload = confirm("Are you sure you want to download the canvas image?");
-  
-  if (confirmDownload) {
-    if (canvas) {
-      const dataUrl = canvas.toDataURL({
-        format: 'png',
-        quality: 1.0,
-      });
-
-      // Create a link element and simulate a click to download the image
-      const link = document.createElement('a');
-      link.href = dataUrl;
-      link.download = 'canvas-image.png'; // Specify the file name
-      link.click();
-    } else {
-      console.error("Canvas is not initialized");
-    }
+  if (canvas) {
+    // Get the canvas image as base64 (you can choose 'image/png' if necessary)
+    const dataUrl = canvas.toDataURL('image/jpeg', 1.0);
+    // Convert the base64 to a Blob with the correct MIME type
+    const blob = base64ToBlob(dataUrl, 'image/jpeg');
+    // Store the Blob in the Pinia store as fileData (this simulates a File object)
+    designStore.setImageData(dataUrl, blob);  // fileDisplay for preview, blob for upload
   } else {
-    console.log("Download canceled by user.");
+    console.error('Canvas is not initialized.');
   }
 };
   
-
+const base64ToBlob = (base64, mimeType) => {
+  const byteString = atob(base64.split(',')[1]);
+  const ab = new ArrayBuffer(byteString.length);
+  const ia = new Uint8Array(ab);
+  for (let i = 0; i < byteString.length; i++) {
+    ia[i] = byteString.charCodeAt(i);
+  }
+  return new Blob([ab], { type: mimeType });
+};
 
 const updateCanvasBackgroundColor = () => {
   nextTick(() => {
+  
     // Update the background color in the store
     canvasStore.updateBackgroundColor(canvasStore.options.backgroundColor); 
+    console.log("change background colour to: ", canvasStore.options.backgroundColor);
+
     // Update the canvas background color using Fabric.js
     if (canvas) {
-        console.log("Setting bg colors");
-        canvas.setBackgroundColor(canvasStore.options.backgroundColor, canvas.renderAll.bind(canvas));
+        console.log("Setting bg colorsx");
+
+        // canvas.setBackgroundColor(canvasStore.options.backgroundColor, canvas.renderAll.bind(canvas));
+        canvas.backgroundColor(canvasStore.options.backgroundColor, canvas.renderAll.bind(canvas));
     }
   })
 }
+
+
+
+
+
+
 
 const uploadBackgroundImage = (event: Event) => {
   const input = event.target as HTMLInputElement;
   if (input.files && input.files[0] && canvas) {
     const reader = new FileReader();
+
     reader.onload = function (e: ProgressEvent<FileReader>) {
       const imgSrc = e.target?.result as string;
-      const image = new Image();
-      image.src = imgSrc;
-      image.onload = () => {
-        const imgElement = new fabric.Image(image);
-        console.log("Image loadeds:", imgElement);
 
-        // Set as background
-        canvas.setBackgroundImage(imgElement, canvas.renderAll.bind(canvas), {
-          scaleX: canvas.width ? canvas.width / imgElement.width! : 1,
-          scaleY: canvas.height ? canvas.height / imgElement.height! : 1,
-        });
+      console.log("Base64 image string:", imgSrc);  // Log the base64 string
+
+      const imageElement = new Image();
+      imageElement.src = imgSrc;
+
+      // When the image is loaded, set it as the Fabric.js background image
+      imageElement.onload = () => {
+        const fabricImage = new fabric.Image(imageElement);
+
+        // Scale the image to fit the canvas
+        fabricImage.scaleToWidth(canvas.width);
+        fabricImage.scaleToHeight(canvas.height);
+
+        // Set the background image and re-render the canvas
+        canvas.setBackgroundImage(fabricImage, canvas.renderAll.bind(canvas));
+      };
+
+      // Handle error if the image fails to load
+      imageElement.onerror = () => {
+        console.error('Failed to load base64 image.');
       };
     };
-    reader.readAsDataURL(input.files[0]);
+
+    // Here is the missing step: read the image as a Data URL (base64)
+    reader.readAsDataURL(input.files[0]);  // This will generate the base64 string
   }
 };
+
+
+
+
+
+
+
+
 
 
 
@@ -203,14 +243,12 @@ const uploadBackgroundImage = (event: Event) => {
 const addSquare = () => {
   const square = new fabric.Rect(canvasStore.squareDefaults);
   canvas?.add(square);
-  objectList.value.push({ name: 'Rectangle', object: square });
 };
 
 // Function to add a new circle
 const addCircle = () => {
   const circle = new fabric.Circle(canvasStore.circleDefaults);
   canvas?.add(circle);
-  objectList.value.push({ name: 'Circle', object: circle });
 };
 
 // Function to remove the selected object from the canvas
@@ -273,24 +311,12 @@ const updateTextAlign = () => {
   }
 };
 
-// Function to handle drop event
-const onDrop = () => {
-if (canvas) {
-  // Update z-index order on canvas based on objectList order
-  objectList.value.forEach((item, index) => {
-    canvas.moveTo(item.object, index);
-  });
-
-  console.log("Helloooo");  // This will log after nextTick resolves
-}
-  // Render canvas after reordering
-  canvas.renderAll();
-};
 </script>
 
 <style scoped>
 .controls {
   margin-top: 20px;
+  margin-left: 20px;
 }
 
 button {

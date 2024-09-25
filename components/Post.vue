@@ -1,9 +1,9 @@
 <template>
   <div class="z-50 bottom-0 h-full w-full">
     <div py-2 w-full>
-      <div class="flex items-denter justify-between">
+      <div class="flex items-center justify-between">
         <div class="flex items-center">
-          <img :src="post.image" class="rounded-full h-[35px]" alt="">
+          <img :src="post.image" class="rounded-full h-[35px] " alt="">
           <div class="ml-2 font-semibold text-[18px]">{{ post.name }}</div>
         </div>
 
@@ -25,17 +25,17 @@
           </div>
         </div>
       </div>
-      <div class="relative flex items-center w-full">
+      <div class="relative flex items-center w-full mb-12">
         <div class="w-[42px] mx-auto">
-          <div class="absolute ml-4 mt-1 top-0 w-[1px] bg-gray-700 h-full" />
+          <div class="absolute ml-4 mt-0 top-0 w-[1px] bg-gray-700 h-full" />
         </div>
-        <div class="bg-black rounded-lg w-[calc(100%-50px)] text-sm w-full font-light">
-          <div class="py-2 text-gray-300">
+        <div class="bg-gray-700 rounded-lg w-[calc(100%-50px)] text-sm w-full font-light">
+          <div class="px-4 py-4 text-gray-300">
             {{ post.text }}
           </div>
           <img 
             v-if="post && post.picture"
-            class="mx-auto w-full mt-2 pr-2 rounded"
+            class="mx-auto w-full mt-2 px-4 pb-4 rounded border-1 border-bg-black"
             :src="runtimeConfig.public.bucketUrl + post.picture" alt="">
             <div class="absolute mt-2 w-full ml-2">
               <button
@@ -45,7 +45,7 @@
               >
                 <Icon 
                     v-if="!hasLikedComputed"
-                    class="p-1 text-white hover:bg-gray-800 rounded-full cursor-pointer" 
+                    class="p-1 hover:bg-gray-800 rounded-full cursor-pointer" 
                     name="mdi:cards-heart-outline" 
                     size="28"
                 />

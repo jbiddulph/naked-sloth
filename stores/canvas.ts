@@ -8,7 +8,7 @@ export const useCanvasStore = defineStore({
       backgroundColor: '#ffffff',
       selectionBorderColor: '#666666'
     },
-    fontSize: "50",
+    fontSize: "25",
     textColor: "#000000",
     selectedFont: "Arial",
     textAlignment: "left",

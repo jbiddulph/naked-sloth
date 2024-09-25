@@ -17,18 +17,21 @@
             <div class="w-[calc(100%-50px)] text w-full">
               <div class="pt-2 w-full">
                 <textarea
-                  v-model="text"
+                  v-model="truncatedText"
                   style="resize: none;"
                   placeholder="Start a thread"
                   id="textarea"
-                  @input="adjustTextAreaHeight()"
+                  @input="adjustTextAreaHeight"
                   class="w-full border-1 outline"
                 ></textarea>
               </div>
               <div class="w-full">
                 <div class="flex flex-col gap-2 py-1">
-                  <div v-if="fileDisplay">
+                  <!-- <div v-if="fileDisplay">
                     <img class="mx-auto w-full mt-2 mr-2 rounded-lg" :src="fileDisplay" alt="">
+                  </div> -->
+                  <div v-if="designStore.fileDisplay">
+                    <img class="mx-auto w-full mt-2 mr-2 rounded-lg" :src="designStore.fileDisplay" alt="Canvas Image" />
                   </div>
                   <label for="fileInput">
                     <Icon class="cursor-pointer" name="clarity:paperclip-line" color="white" size="25" />
@@ -66,47 +69,79 @@
 
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid';
-const userStore = useUserStore()
-const runtimeConfig = useRuntimeConfig()
-const props = defineProps({message: String})
-const client = useSupabaseClient()
-const user = useSupabaseUser()
+import { useDesignStore } from '@/stores/design'; // Pinia store for image data
+import { useUserStore } from '@/stores/user';
+import { ref, watch } from 'vue';
+
+const userStore = useUserStore();
+const designStore = useDesignStore();
+const runtimeConfig = useRuntimeConfig();
+const props = defineProps({ message: String });
+const client = useSupabaseClient();
+const user = useSupabaseUser();
+
 const userDetails = reactive({
-  userId: "",
-  name: "",
-  avatarUrl: ""
-})
-const cleanMessage = ref("");
-let text = ref(null)
-let isLoading = ref(false)
+  userId: '',
+  name: '',
+  avatarUrl: ''
+});
+
+const cleanMessage = ref('');
+let text = ref(null);
+let isLoading = ref(false);
+
+const truncatedText = computed({
+  get() {
+    const textValue = text.value || ""; // Ensure text.value is never null/undefined
+    if (textValue.length > 100) {
+      return textValue.substring(0, 100) + "..."; // Truncate to 100 chars
+    } else if (textValue.length > 50) {
+      return textValue.substring(0, 100) + "..."; // Append '...' for >50 chars
+    } else {
+      return textValue; // No truncation needed
+    }
+  },
+  set(value) {
+    text.value = value; // Updates the original text
+  }
+});
 
 const adjustTextAreaHeight = () => {
-  var textarea = document.getElementById("textarea");
-  textarea.style.height = 'auto'
-  textarea.style.height = textarea?.scrollHeight + "px"
-}
+  var textarea = document.getElementById('textarea');
+  textarea.style.height = 'auto';
+  textarea.style.height = textarea?.scrollHeight + 'px';
+};
+
 function removeHtmlTags(message) {
-  return message.replace(/<\/?[^>]+(>|$)/g, "");
+  return message.replace(/<\/?[^>]+(>|$)/g, '');
 }
 
-let file = ref(null)
-let fileDisplay = ref(null)
-let fileData = ref(null)
+// Watch for changes in fileData from Pinia store
+watch(
+  () => designStore.fileData,
+  (newFileData) => {
+    if (newFileData) {
+      console.log('New file data detected, preparing for upload.');
+      // Perform any action you need here when fileData changes, like an upload
+    }
+  },
+  { immediate: true } // Run the watcher immediately upon component load
+);
 
 onMounted(() => {
   if (user.value && user.value.identities && user.value.identities[1]) {
-    console.log("User: ", user.value.identities[1].identity_data.full_name);
-    
-    // Directly assign the values to userDetails
-    userDetails.name = user.value.identities[1].identity_data.full_name
-    userDetails.userId = user.value.identities[1].user_id
-    userDetails.avatarUrl = user.value.identities[1].identity_data.avatar_url
+    console.log('User: ', user.value.identities[1].identity_data.full_name);
+    // Assign the values to userDetails
+    userDetails.name = user.value.identities[1].identity_data.full_name;
+    userDetails.userId = user.value.identities[1].user_id;
+    userDetails.avatarUrl = user.value.identities[1].identity_data.avatar_url;
   }
   if (props.message) {
     cleanMessage.value = removeHtmlTags(props.message);
     text.value = cleanMessage.value; // Setting text.value here
   }
-})
+});
+
 watch(
   () => props.message,
   (newMessage) => {
@@ -115,70 +150,83 @@ watch(
       text.value = cleanMessage.value; // Reactively set text.value when props.message changes
     }
   },
-  { immediate: true } // Ensure the watch runs initially
+  { immediate: true }
 );
+
 const clearData = () => {
-  text.value = null
-  file.value = null
-  fileDisplay.value = null
-  fileData.value = null
-}
+  text.value = null;
+  designStore.clearImageData(); // Clear Pinia store data
+};
 
 const onChange = () => {
-  console.log("paperclip clicked")
-  fileDisplay.value = URL.createObjectURL(file.value.files[0])
-  fileData.value = file.value.files[0]
-}
+  console.log('File input clicked');
+  const file = file.value.files[0];
+  if (file) {
+    const fileURL = URL.createObjectURL(file);
+    designStore.setImageData(fileURL, file); // Update Pinia store with file data
+  }
+};
 
 const createPost = async () => {
   let dataOut = null;
   let errorOut = null;
 
-  isLoading.value = true
+  isLoading.value = true;
 
-  if (fileData.value) {
+  if (designStore.fileData) {
+    const file = designStore.fileData;
+
+    // Log to confirm it's a Blob with the correct type
+    console.log('File in createPost (Blob):', file);
+
+    // Hardcode the file type if necessary (should be 'image/jpeg' by now)
+    const fileType = file.type || 'image/jpeg';
+
+    console.log('Final file type:', fileType);
+
+    // Upload the image Blob with the correct MIME type
     const { data, error } = await client
-                                    .storage
-                                    .from('rapr-files')
-                                    .upload(`${uuidv4()}.jpg`, fileData.value)
+      .storage
+      .from('rapr-files')
+      .upload(`${uuidv4()}.jpg`, file, {
+        contentType: fileType, // Correct MIME type for the Blob
+      });
 
     dataOut = data;
     errorOut = error;
   }
 
   if (errorOut) {
-    console.log(errorOut)
-    return errorOut
+    console.log(errorOut);
+    return errorOut;
   }
 
-  let pic = ''
+  let pic = '';
   if (dataOut) {
-    pic = dataOut.path ? dataOut.path : ''
+    pic = dataOut.path ? dataOut.path : '';
   }
+
   try {
     await useFetch(`/api/create-post/`, {
       method: 'POST',
       body: {
         userId: userDetails.userId,
         name: userDetails.name,
-        image: userDetails.avatarUrl,
+        image: userDetails.avatarUrl || "", // Optional
         text: text.value,
-        picture: pic,
-      }
-    })
-    console.log("userId: ", userDetails.userId);
-    console.log("name: ", userDetails.name);
-    console.log("image: ", userDetails.avatarUrl);
-    console.log("text: ", text.value);
-    console.log("picture: ", pic);
-    await userStore.getAllPosts()
-    userStore.isMenuOverlay = false
-    clearData()
-    isLoading.value = false
-  } catch (error) {
-    console.log(error)
-    isLoading.value = false
-  }
+        picture: pic, // Uploaded file path
+      },
+    });
 
-}
+    console.log('Post created:', text.value);
+    clearData();
+    isLoading.value = false;
+  } catch (error) {
+    console.log(error);
+    isLoading.value = false;
+  }
+};
+
+
 </script>
+
