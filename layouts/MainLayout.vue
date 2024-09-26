@@ -1,6 +1,6 @@
 <template>
   <div id="mainLayout" class="h-screen">
-    <div class="dark:text-yellow-500 text-yellow-900 flex w-full justify-between p-2">
+    <div class="dark:bg-slate-800 bg-slate-300 dark:text-yellow-500 text-yellow-900 flex w-full justify-between p-2 border-b-2 dark:border-slate-700">
       <button @click="toggleTheme">
         <template v-if="isDarkMode">
           <UIcon name="mdi:moon-waning-crescent" color="yellow" />
@@ -9,16 +9,16 @@
           <UIcon name="mdi:white-balance-sunny" color="yellow" />
         </template>
       </button>
+      <div class="w-full mx-auto max-w-[1200px]">
+        <div id="topMenu" class="w-full flex items-center justify-center px-2 h-10 my-2">
+          <img src="/threads-logo.png" class="w-[35px]" alt="">
+        </div>
+      </div>
       <button  
         @click="userStore.isLogoutOverlay = true"
       >
         <UIcon name="i-heroicons:arrow-right-end-on-rectangle" class="w-6 h-6" />
       </button>
-    </div>
-    <div class="w-full mx-auto max-w-[1200px]">
-      <div id="topMenu" class="w-full flex items-center justify-center px-2 h-10 my-2">
-        <img src="/threads-logo.png" class="w-[35px]" alt="">
-      </div>
     </div>
 
     <div class="flex w-full max-w-[1200px] mx-auto h-screen">

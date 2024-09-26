@@ -1,23 +1,21 @@
 <template>
-  <div>
-    <div class="h-auto w-[300px] my-6 mx-auto">
-      <USelectMenu v-model="selectedTopic" :options="topic" />
-      <div v-if="selectedTopic === 'Personal'" class="flex w-25">
-        <CommandPalette :items="keywords" @updateSelected="handleSelectedUpdate" @add-new-keyword="addNewKeyword" />
-      </div>
-    </div>
-
-    
-    <UTabs :items="tabItems" @change="onChange" />
-    
-    <div class="mx-auto max-w-[1200px] overflow-hidden">
+  <div class="flex flex-col mx-6">
+    <div class="h-[346px] p-6 my-6 mx-auto max-w-[1200px] overflow-hidden flex md:flex-row flex-col bg-white w-full rounded-md border-slate-200 border-2 justify-evenly">
       <!-- <div class="flex flex-row">
         <UInput type="text" v-model="help" />
         <UButton @click="sendHelp" label="Ask" />
       </div> -->
       {{ helpRes.content }}
-      <div >
-        <UInput  
+      <div id="controls">
+        <div class="h-auto w-[300px] my-6 mx-auto">
+          <USelectMenu v-model="selectedTopic" class="h-auto z-1" :options="topic" />
+          <div v-if="selectedTopic === 'Personal'" class="flex w-25">
+            <CommandPalette :items="keywords" @updateSelected="handleSelectedUpdate" @add-new-keyword="addNewKeyword" />
+          </div>
+        </div>
+        <UTabs :items="tabItems" @change="onChange" />
+        <UInput 
+          disabled 
           :icon="selectedIcon"
           class="custom-placeholder text-white"
           :color="isDarkMode ? 'gray' : 'yellow'"
@@ -26,33 +24,35 @@
           variant="outline"
           v-model="message" 
           :placeholder="message"
-        />  
-        
+        />    
       </div>
-      <div class="flex h-auto flex-col">
-        <div class="m-auto w-auto py-6 text-center h-auto overflow-scroll">
-          <div v-html="rapRes.content"></div>
+      <div id="generated">
+        <div class="flex h-auto flex-col">
+          <div class="m-auto w-auto py-6 text-center h-auto overflow-scroll">
+            <div v-html="rapRes.content"></div>
+          </div>
+          <div class="w-full text-center mb-6">
+            <UButton
+              class="text-center"
+              :loading="isLoading" 
+              icon="i-heroicons-sparkles-20-solid" 
+              @click="sendMessage" 
+              label="Generate" 
+              size="xl"
+            />
+          </div>
         </div>
-        <div class="w-full text-center mb-6">
-          <UButton
+        <!-- Canvas -->
+        <!-- <div v-if="rapStore.rapText !== ''"> -->
+        <div class="w-full text-center">
+          <DesignModal 
             class="text-center"
-            :loading="isLoading" 
-            icon="i-heroicons-sparkles-20-solid" 
-            @click="sendMessage" 
-            label="Generate" 
-            size="xl"
           />
         </div>
+        <!-- END Canvas -->
       </div>
-      <!-- Canvas -->
-      <!-- <div v-if="rapStore.rapText !== ''"> -->
-      <div class="w-full text-center">
-        <DesignModal 
-          class="text-center"
-        />
-      </div>
-      <!-- END Canvas -->
-      <div id="posts" class="px-4 max-w-[1200px] mx-auto">
+    </div>
+    <div id="posts" class="px-4 max-w-[1200px] mx-auto">
         <div v-if="isPosts" v-for="post in posts" :key="post">
           <Post :post="post" @isDeleted="posts = []" />
         </div>
@@ -87,7 +87,6 @@
         />
       </div>
       {{ selected }}
-    </div>
   </div>
 </template>
 
