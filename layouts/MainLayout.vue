@@ -1,6 +1,17 @@
 <template>
   <div id="mainLayout" class="h-screen">
-    <div class="dark:bg-slate-800 bg-slate-300 dark:text-yellow-500 text-yellow-900 flex w-full justify-between p-2 border-b-2 dark:border-slate-700">
+    <div class="
+      dark:bg-slate-800 
+      bg-slate-300 
+      dark:text-yellow-500 
+      text-yellow-900 
+      flex 
+      w-full 
+      justify-between 
+      p-2 
+      border-b-2 
+      dark:border-slate-700
+      ">
       <button @click="toggleTheme">
         <template v-if="isDarkMode">
           <UIcon name="mdi:moon-waning-crescent" color="yellow" />

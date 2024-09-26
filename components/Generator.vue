@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col mx-6">
-    <div class="h-[346px] p-6 my-6 mx-auto max-w-[1200px] overflow-hidden flex md:flex-row flex-col bg-white w-full rounded-md border-slate-200 border-2 justify-evenly">
+    <div class="min-h-[346px] p-6 my-6 mx-auto max-w-[1200px] overflow-hidden flex md:flex-row flex-col dark:bg-slate-700 bg-white w-full rounded-md border-slate-200 border-2 justify-evenly">
       <!-- <div class="flex flex-row">
         <UInput type="text" v-model="help" />
         <UButton @click="sendHelp" label="Ask" />
@@ -13,11 +13,12 @@
             <CommandPalette :items="keywords" @updateSelected="handleSelectedUpdate" @add-new-keyword="addNewKeyword" />
           </div>
         </div>
-        <UTabs :items="tabItems" @change="onChange" />
+        <div class="mb-6 flex w-full justify-center w-[300px]">
+          <UTabs :items="tabItems" orientation="vertical" :ui="{ wrapper: 'flex items-center gap-4 justify-center w-auto', list: { width: 'flex items-center justify-center flex-col' } }" @change="onChange" />
+        </div>
         <UInput 
           disabled 
           :icon="selectedIcon"
-          class="custom-placeholder text-white"
           :color="isDarkMode ? 'gray' : 'yellow'"
           :ui="inputui"
           size="xl"
