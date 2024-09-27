@@ -20,13 +20,12 @@
             <div class="w-[calc(100%-50px)] text w-full">
               <div class="pt-2 w-full">
                 <textarea
-                  hidden
                   v-model="truncatedText"
                   style="resize: none;"
                   placeholder="Start a thread"
                   id="textarea"
                   @input="adjustTextAreaHeight"
-                  class="w-full border-1 outline"
+                  class="hidden w-full border-1 outline"
                 ></textarea>
               </div>
               <div class="w-full">

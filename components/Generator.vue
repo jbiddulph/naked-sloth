@@ -28,16 +28,16 @@
           :placeholder="message"
         />    
       </div>
-      <div id="generated">
-        <div class="w-full border-b-2 mx-6 pb-4">
-          <ul class="flex flex-row justify-evenly text-2xl list-disc m-0 p-0">
-            <li class="ml-6">Generate</li>
-            <li class="ml-6">Design</li>
-            <li class="ml-6">Post</li>
+      <div id="generated" class="h-100 flex justify-evenly flex-col">
+        <div class="w-full border-b-2 md:pb-4 pb-0 md:pt-0 pt-4">
+          <ul class="flex flex-row justify-evenly md:text-2xl text-lg list-disc m-0 p-0">
+            <li class="mx-6">Generate</li>
+            <li class="mx-6">Design</li>
+            <li class="mx-6">Post</li>
           </ul>
         </div>
         <div class="flex h-auto flex-col">
-          <div class="m-auto w-auto py-6 text-center h-auto overflow-scroll">
+          <div class="m-auto w-auto pb-6 text-center h-auto overflow-scroll">
             <div v-html="rapRes.content"></div>
           </div>
           <div class="w-full text-center mb-6">
