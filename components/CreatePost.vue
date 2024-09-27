@@ -8,6 +8,9 @@
               <!-- <img class="rounded-full h-[35px]" :src="user.identities[0].identity_data.avatar_url" alt=""> -->
               <img class="rounded-full h-[35px]" :src="user.user_metadata.avatar_url" alt="">
               <div class="ml-2 font-semibold text-[18px]">{{ user.user_metadata.full_name }}</div>
+              <p v-if="!designStore.fileDisplay">
+                you need to Design your Rapr, click the button above
+              </p>
             </div>
           </div>
           <div class="relative flex items-center w-full">
@@ -17,6 +20,7 @@
             <div class="w-[calc(100%-50px)] text w-full">
               <div class="pt-2 w-full">
                 <textarea
+                  hidden
                   v-model="truncatedText"
                   style="resize: none;"
                   placeholder="Start a thread"
@@ -31,9 +35,10 @@
                     <img class="mx-auto w-full mt-2 mr-2 rounded-lg" :src="fileDisplay" alt="">
                   </div> -->
                   <div v-if="designStore.fileDisplay">
-                    <img class="mx-auto w-full mt-2 mr-2 rounded-lg" :src="designStore.fileDisplay" alt="Canvas Image" />
+                    <small>Please check your preview and then post</small>
+                    <img class="mx-auto w-full mt-2 rounded-lg border-2" :src="designStore.fileDisplay" alt="Canvas Image" />
                   </div>
-                  <label for="fileInput">
+                  <!-- <label for="fileInput">
                     <Icon class="cursor-pointer" name="clarity:paperclip-line" color="white" size="25" />
                     <input 
                       ref="file"
@@ -43,26 +48,26 @@
                       hidden
                       accept=".jpg,jpeg,.png"
                     />
-                  </label>
+                  </label> -->
                 </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <button
-        v-if="text"
+      <UButton
+        v-if="designStore.fileDisplay"
         :disabled="isLoading"
         @click="createPost"
-        class="font-bold p-2 inline-block p-4"
-        :class="isLoading? 'text-gray-600' : 'text-blue-600'"
+        class="font-bold px-4 flex mx-auto"
+        size="md"
       >
-        <div v-if="!isLoading">Post</div>
+        <div v-if="!isLoading">Post my Rapr</div>
         <div v-else class="flex items-center gap-2 justify-center">
           <Icon name="eos-icons:bubble-loading" size="25" />
           Please wait...
         </div>
-      </button>
+      </UButton>
     </div>
   </div>
 </template>
@@ -71,10 +76,12 @@
 import { v4 as uuidv4 } from 'uuid';
 import { useDesignStore } from '@/stores/design'; // Pinia store for image data
 import { useUserStore } from '@/stores/user';
+import { useRapStore } from '@/stores/rap';
 import { ref, watch } from 'vue';
 
 const userStore = useUserStore();
 const designStore = useDesignStore();
+const rapStore = useRapStore();
 const runtimeConfig = useRuntimeConfig();
 const props = defineProps({ message: String });
 const client = useSupabaseClient();
@@ -92,14 +99,7 @@ let isLoading = ref(false);
 
 const truncatedText = computed({
   get() {
-    const textValue = text.value || ""; // Ensure text.value is never null/undefined
-    if (textValue.length > 100) {
-      return textValue.substring(0, 100) + "..."; // Truncate to 100 chars
-    } else if (textValue.length > 50) {
-      return textValue.substring(0, 100) + "..."; // Append '...' for >50 chars
-    } else {
-      return textValue; // No truncation needed
-    }
+    return text.value || ""; // Simply return the text value, no truncation
   },
   set(value) {
     text.value = value; // Updates the original text

@@ -46,9 +46,9 @@ import { useRapStore } from "~/stores/rap";
 import { useCanvasStore } from "~/stores/canvas";
 import { useDesignStore } from "~/stores/design";
 
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { ref, onMounted, onBeforeUnmount, nextTick, defineEmits } from 'vue';
 import * as fabric from 'fabric'; // v6
-
+const emit = defineEmits(['downloaded'])
 const rapStore = useRapStore()
 const canvasStore = useCanvasStore()
 const designStore = useDesignStore()
@@ -155,6 +155,7 @@ const downloadCanvasAsImage = () => {
     const blob = base64ToBlob(dataUrl, 'image/jpeg');
     // Store the Blob in the Pinia store as fileData (this simulates a File object)
     designStore.setImageData(dataUrl, blob);  // fileDisplay for preview, blob for upload
+    emit('downloaded')
   } else {
     console.error('Canvas is not initialized.');
   }

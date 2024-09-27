@@ -1,7 +1,3 @@
-<script setup lang="ts">
-const isOpen = ref(false)
-</script>
-
 <template>
   <div>
     <UButton label="Design my Rapr" @click="isOpen = true" />
@@ -26,9 +22,18 @@ const isOpen = ref(false)
           </div>
         </template>
 
-        <Canvas class="h-full" />
+        <Canvas class="h-full" @downloaded="closeModal" />
       </UCard>
     </UModal>
   </div>
 </template>
+
+<script setup lang="ts">
+const isOpen = ref(false)
+
+const closeModal = () => {
+  isOpen.value = false
+}
+</script>
+
 

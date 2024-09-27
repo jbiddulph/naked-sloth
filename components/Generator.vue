@@ -9,6 +9,7 @@
       <div id="controls">
         <div class="h-auto w-[300px] my-6 mx-auto">
           <USelectMenu v-model="selectedTopic" class="h-auto z-1" :options="topic" />
+          <small class="text-xs">personal allows you to add keywords</small>
           <div v-if="selectedTopic === 'Personal'" class="flex w-25">
             <CommandPalette :items="keywords" @updateSelected="handleSelectedUpdate" @add-new-keyword="addNewKeyword" />
           </div>
@@ -28,6 +29,13 @@
         />    
       </div>
       <div id="generated">
+        <div class="w-full border-b-2 mx-6 pb-4">
+          <ul class="flex flex-row justify-evenly text-2xl list-disc m-0 p-0">
+            <li class="ml-6">Generate</li>
+            <li class="ml-6">Design</li>
+            <li class="ml-6">Post</li>
+          </ul>
+        </div>
         <div class="flex h-auto flex-col">
           <div class="m-auto w-auto py-6 text-center h-auto overflow-scroll">
             <div v-html="rapRes.content"></div>
@@ -51,6 +59,9 @@
           />
         </div>
         <!-- END Canvas -->
+        <div v-if="rapStore.rapText !== ''">
+          <CreatePost :message="rapRes.content" />
+        </div>
       </div>
     </div>
     <div id="posts" class="px-4 max-w-[1200px] mx-auto">
@@ -79,7 +90,6 @@
             {'max-h-0 transition-all duration-200 ease-out invisible': !userStore.isMenuOverlay },
           ]"
         /> -->
-        <CreatePost :message="rapRes.content" />
         <Modal 
           :class="[
             {'max-h-[100vh] transition-all duration-200 ease-in visible': userStore.isLogoutOverlay },
@@ -94,10 +104,12 @@
 <script lang="ts" setup>
 import { useUserStore } from "~/stores/user";
 import { useCanvasStore } from "~/stores/canvas";
+import { useRapStore } from "~/stores/rap";
 import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
 const canvasStore = useCanvasStore()
+const rapStore = useRapStore()
 const user = useSupabaseUser()
 const router = useRouter()
 
@@ -264,6 +276,7 @@ const sendMessage = async () => {
   cleanRap.value = removeHtmlTags(rapRes.value.content)
   console.log("Clean Rap: ", cleanRap)
   canvasStore.textContent = cleanRap._value
+  rapStore.setRapText(cleanRap)
 };
 
 // Watch for changes in selectedTopic and update the placeholder message
