@@ -43,6 +43,7 @@
           <div class="w-full text-center mb-6">
             <UButton
               class="text-center"
+              color="pistachio"
               :loading="isLoading" 
               icon="i-heroicons-sparkles-20-solid" 
               @click="sendMessage" 
