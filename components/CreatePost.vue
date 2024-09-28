@@ -6,11 +6,9 @@
           <div class="flex items-center">
             <div v-if="user" class="flex items-center">
               <!-- <img class="rounded-full h-[35px]" :src="user.identities[0].identity_data.avatar_url" alt=""> -->
-              <img class="rounded-full h-[35px]" :src="user.user_metadata.avatar_url" alt="">
-              <div class="ml-2 font-semibold text-[18px]">{{ user.user_metadata.full_name }}</div>
-              <p v-if="!designStore.fileDisplay">
+              <small v-if="!designStore.fileDisplay" class="text-center">
                 you need to Design your Rapr, click the button above
-              </p>
+              </small>
             </div>
           </div>
           <div class="relative flex items-center w-full">
@@ -129,9 +127,8 @@ watch(
 
 onMounted(() => {
   if (user.value && user.value.identities && user.value.identities[1]) {
-    console.log('User: ', user.value.identities[1].identity_data.full_name);
     // Assign the values to userDetails
-    userDetails.name = user.value.identities[1].identity_data.full_name;
+    userDetails.name = user.value.identities[1].identity_data.user_name;
     userDetails.userId = user.value.identities[1].user_id;
     userDetails.avatarUrl = user.value.identities[1].identity_data.avatar_url;
   }

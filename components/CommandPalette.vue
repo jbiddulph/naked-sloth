@@ -78,7 +78,7 @@ watch(selected, (newSelected) => {
 <style scoped>
 .UCommandPalette {
   border: 1px solid red;
-  background-color: lightyellow;
+  background-color: pistachio-500;
 }
 /* Optional styling for better UI */
 .mt-4 {

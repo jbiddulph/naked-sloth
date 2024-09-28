@@ -2,9 +2,9 @@
   <div id="mainLayout" class="h-screen">
     <div class="
       dark:bg-slate-800 
-      bg-slate-300 
-      dark:text-yellow-500 
-      text-yellow-900 
+      bg-slate-500 
+      dark:text-pistachio-500 
+      text-pistachio-500 
       flex 
       w-full 
       justify-between 
@@ -14,10 +14,10 @@
       ">
       <button @click="toggleTheme">
         <template v-if="isDarkMode">
-          <UIcon name="mdi:moon-waning-crescent" color="yellow" />
+          <UIcon name="mdi:moon-waning-crescent" color="pistachio" />
         </template>
         <template v-else>
-          <UIcon name="mdi:white-balance-sunny" color="yellow" />
+          <UIcon name="mdi:white-balance-sunny" color="pistachio" />
         </template>
       </button>
       <div class="w-full mx-auto max-w-[1200px]">
@@ -25,11 +25,16 @@
           <img src="/threads-logo.png" class="w-[35px]" alt="">
         </div>
       </div>
-      <button  
-        @click="userStore.isLogoutOverlay = true"
-      >
-        <UIcon name="i-heroicons:arrow-right-end-on-rectangle" class="w-6 h-6" />
-      </button>
+      <div class="flex items-center">
+        <img class="rounded-full h-[35px]" :src="user.user_metadata.avatar_url" alt="">
+        <div class="hidden md:flex text-xs dark:text-white text-slate-700 ml-2 font-semibold text-[18px]">{{ initials }}</div>
+        <button  
+          @click="userStore.isLogoutOverlay = true"
+          class="ml-2"
+        >
+          <UIcon name="i-heroicons:arrow-right-end-on-rectangle" class="w-6 h-6" />
+        </button>
+      </div>
     </div>
 
     <div class="flex w-full max-w-[1200px] mx-auto h-screen">
@@ -64,7 +69,7 @@
 <script setup lang="ts">
 import { useUserStore } from '~/stores/user';
 const userStore = useUserStore()
-
+const user = useSupabaseUser();
 const isDarkMode = ref(false);
 
 const toggleTheme = () => {
@@ -75,6 +80,13 @@ const toggleTheme = () => {
     document.documentElement.classList.remove('dark');
   }
 };
+const initials = computed(() => {
+  console.log("Full name: ", user.value.user_metadata);
+  return user.value.user_metadata.full_name
+    .split(' ')
+    .map(name => name.charAt(0).toUpperCase())
+    .join('');
+});
 </script>
 
 <style scoped>

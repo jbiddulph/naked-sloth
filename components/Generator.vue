@@ -20,7 +20,7 @@
         <UInput 
           disabled 
           :icon="selectedIcon"
-          :color="isDarkMode ? 'gray' : 'yellow'"
+          :color="isDarkMode ? 'gray' : 'pistachio'"
           :ui="inputui"
           size="xl"
           variant="outline"
