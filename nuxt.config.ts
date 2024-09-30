@@ -47,11 +47,11 @@ export default defineNuxtConfig({
     },
     registerType: 'autoUpdate',
     workbox: {
-      navigateFallback: '/index.html', // Serve index.html as the fallback
+      navigateFallback: '/', // Use the root route as fallback
       runtimeCaching: [
         {
           urlPattern: '/',
-          handler: 'NetworkFirst',
+          handler: 'NetworkFirst', // Handle the homepage as NetworkFirst
           options: {
             cacheableResponse: {
               statuses: [0, 200],
@@ -60,7 +60,7 @@ export default defineNuxtConfig({
         },
         {
           urlPattern: /.*\.(?:js|css|html|png|jpg|svg|webp)$/,
-          handler: 'StaleWhileRevalidate',
+          handler: 'StaleWhileRevalidate', // Cache static assets
           options: {
             cacheableResponse: {
               statuses: [0, 200],
@@ -68,12 +68,7 @@ export default defineNuxtConfig({
           },
         }
       ],
-      // Precache specific routes
-      preCaching: [
-        { url: '/', revision: null },   // Ensure homepage is precached
-        { url: '/index.html', revision: null } // Ensure index.html is precached
-      ],
-      debug: true, // Enable detailed Workbox logs
+      debug: true,
     },
   },
   app: {
