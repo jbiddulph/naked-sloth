@@ -7,7 +7,6 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxtjs/supabase',
     '@pinia/nuxt',
-    '@vite-pwa/nuxt',
   ],
   runtimeConfig: {
     public: {
@@ -25,56 +24,10 @@ export default defineNuxtConfig({
   imports: {
     dirs: ['stores']
   },
-  pwa: {
-    manifest: {
-      name: 'Rapr generator from NakedSloth',
-      short_name: 'App',
-      description: 'A rap generation app that you can design and post',
-      background_color: '#ffffff',
-      theme_color: '#000000',
-      icons: [
-        {
-          src: 'pwa-192x192.png',
-          sizes: '192x192',
-          type: 'image/png'
-        },
-        {
-          src: 'pwa-512x512.png',
-          sizes: '512x512',
-          type: 'image/png'
-        }
-      ]
-    },
-    registerType: 'autoUpdate',
-    workbox: {
-      navigateFallback: '/', // Use the root route as fallback
-      runtimeCaching: [
-        {
-          urlPattern: '/',
-          handler: 'NetworkFirst', // Handle the homepage as NetworkFirst
-          options: {
-            cacheableResponse: {
-              statuses: [0, 200],
-            },
-          },
-        },
-        {
-          urlPattern: /.*\.(?:js|css|html|png|jpg|svg|webp)$/,
-          handler: 'StaleWhileRevalidate', // Cache static assets
-          options: {
-            cacheableResponse: {
-              statuses: [0, 200],
-            },
-          },
-        }
-      ],
-      debug: true,
-    },
-  },
   app: {
     head: {
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no',
     }
-  },
+  }
 })
