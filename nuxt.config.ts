@@ -45,10 +45,9 @@ export default defineNuxtConfig({
         }
       ]
     },
-    registerType: 'autoUpdate', // Ensures SW auto-updates when new content is available
+    registerType: 'autoUpdate',
     workbox: {
-      navigateFallback: '/index.html', // Serve index.html when navigating to routes that are not precached
-      navigateFallbackDenylist: [/^\/api\//], // Avoid fallback for API routes
+      navigateFallback: '/index.html', // Serve index.html as the fallback
       runtimeCaching: [
         {
           urlPattern: '/',
@@ -69,7 +68,12 @@ export default defineNuxtConfig({
           },
         }
       ],
-      debug: true,
+      // Precache specific routes
+      preCaching: [
+        { url: '/', revision: null },   // Ensure homepage is precached
+        { url: '/index.html', revision: null } // Ensure index.html is precached
+      ],
+      debug: true, // Enable detailed Workbox logs
     },
   },
   app: {
