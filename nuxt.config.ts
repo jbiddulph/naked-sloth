@@ -44,7 +44,33 @@ export default defineNuxtConfig({
           type: 'image/png'
         }
       ]
-    }
+    },
+    registerType: 'autoUpdate', // Ensures SW auto-updates when new content is available
+    workbox: {
+      navigateFallback: '/index.html', // Serve index.html when navigating to routes that are not precached
+      navigateFallbackDenylist: [/^\/api\//], // Avoid fallback for API routes
+      runtimeCaching: [
+        {
+          urlPattern: '/',
+          handler: 'NetworkFirst',
+          options: {
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        },
+        {
+          urlPattern: /.*\.(?:js|css|html|png|jpg|svg|webp)$/,
+          handler: 'StaleWhileRevalidate',
+          options: {
+            cacheableResponse: {
+              statuses: [0, 200],
+            },
+          },
+        }
+      ],
+      debug: true,
+    },
   },
   app: {
     head: {
