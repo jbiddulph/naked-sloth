@@ -67,7 +67,7 @@
     </div>
     <div id="posts" class="px-4 max-w-[1200px] mx-auto">
         <div v-if="isPosts" v-for="post in posts" :key="post">
-          <Post :post="post" @isDeleted="posts = []" />
+          <Post :post="post" @isDeleted="posts = userStore.getAllPosts" />
         </div>
         <div v-else>
           <client-only>
