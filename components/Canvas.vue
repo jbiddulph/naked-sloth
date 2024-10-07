@@ -192,6 +192,32 @@ const updateCanvasBackgroundColor = () => {
 
 
 
+// const uploadBackgroundImage = (event: Event) => {
+//   const input = event.target as HTMLInputElement;
+//   if (input.files && input.files[0] && canvas) {
+//     const reader = new FileReader();
+
+//     reader.onload = function (e: ProgressEvent<FileReader>) {
+//       const imgSrc = e.target?.result as string;
+//       const image = new Image();
+
+//       image.onload = function() {
+//         const ctx = canvas.getContext('2d');
+//         if (ctx) {
+//           // Clear the canvas before drawing
+//           ctx.clearRect(0, 0, canvas.width, canvas.height);
+//           // Draw the image onto the canvas
+//           ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+//         }
+//       };
+      
+//       image.src = imgSrc; // Set the image source to the base64 string
+//     };
+
+//     // Read the image as a Data URL (base64)
+//     reader.readAsDataURL(input.files[0]);  // This will generate the base64 string
+//   }
+// };
 
 
 const uploadBackgroundImage = (event: Event) => {
@@ -201,34 +227,28 @@ const uploadBackgroundImage = (event: Event) => {
 
     reader.onload = function (e: ProgressEvent<FileReader>) {
       const imgSrc = e.target?.result as string;
-
-      console.log("Base64 image string:", imgSrc);  // Log the base64 string
-
       const imageElement = new Image();
-      imageElement.src = imgSrc;
 
-      // When the image is loaded, set it as the Fabric.js background image
       imageElement.onload = () => {
-        const fabricImage = new fabric.Image(imageElement);
+        const fabricImage = new fabric.Image(imageElement, {
+          scaleX: canvas.width / imageElement.width,
+          scaleY: canvas.height / imageElement.height,
+          selectable: false,  // Prevent selection of the background image
+        });
 
-        // Scale the image to fit the canvas
-        fabricImage.scaleToWidth(canvas.width);
-        fabricImage.scaleToHeight(canvas.height);
-
-        // Set the background image and re-render the canvas
+        // Make sure `canvas` is a Fabric.js instance
         canvas.setBackgroundImage(fabricImage, canvas.renderAll.bind(canvas));
       };
 
-      // Handle error if the image fails to load
-      imageElement.onerror = () => {
-        console.error('Failed to load base64 image.');
-      };
+      imageElement.src = imgSrc; // Set the image source to the base64 string
     };
 
-    // Here is the missing step: read the image as a Data URL (base64)
+    // Read the image as a Data URL (base64)
     reader.readAsDataURL(input.files[0]);  // This will generate the base64 string
   }
 };
+
+
 
 
 

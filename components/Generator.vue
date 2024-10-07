@@ -65,8 +65,8 @@
         </div>
       </div>
     </div>
-    <div id="posts" class="px-4 max-w-[1200px] mx-auto">
-        <div v-if="isPosts" v-for="post in posts" :key="post">
+    <div id="posts" class="px-4 max-w-[1200px] mx-auto flex flex-col md:flex-row md:flex-wrap">
+        <div v-if="isPosts" v-for="post in posts" :key="post" class="md:w-[25%]">
           <Post :post="post" @isDeleted="posts = userStore.getAllPosts" />
         </div>
         <div v-else>
